@@ -10,11 +10,11 @@ document.body.appendChild(targetEl);
 
 const viewer: Viewer = Viewer.getInstance();
 
-// viewer.setEDLEnabled(true);
+viewer.composerInitService.setEDLEnabled(true);
 
-viewer.edlStrength = 3.0;
-viewer.edlRadius = 2.4;
-viewer.edlOpacity = 1.0;
+viewer.composerInitService.edlStrength = 3.0;
+viewer.composerInitService.edlRadius = 2.4;
+viewer.composerInitService.edlOpacity = 1.0;
 
 viewer.initialize(targetEl);
 

@@ -49,7 +49,7 @@ export type PotreeVersion = keyof typeof GEOMETRY_LOADERS;
 
 export class Potree implements IPotree {
   private static picker: PointCloudOctreePicker | undefined;
-  private _pointBudget: number = DEFAULT_POINT_BUDGET;
+  _pointBudget: number = DEFAULT_POINT_BUDGET;
   private _rendererSize: Vector2 = new Vector2();
 
   maxNumNodesLoading: number = MAX_NUM_NODES_LOADING;

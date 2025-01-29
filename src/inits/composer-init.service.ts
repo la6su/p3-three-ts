@@ -14,8 +14,7 @@ import {
   Raycaster, Vector2, Object3D,
 } from 'three'
 import { Viewer } from '../../example/viewer'
-
-// import { EdlEffect } from '../effects/EdlEffect';
+import { EDLRenderer } from '../viewer/EDLRenderer'
 
 export class ComposerInitService {
   control!: EffectComposer;
@@ -26,14 +25,20 @@ export class ComposerInitService {
   private mouse!: Vector2;
 
   private renderPass!: RenderPass;
-  // private edlEffect: EdlEffect;
-  // private edlPass: EffectPass;
+  private edlRenderer: EDLRenderer | undefined;
   private targetEl!: HTMLElement
   private sceneRenderTarget!: WebGLRenderTarget<Texture>
+  // private screenshot!: { target: WebGLRenderTarget<Texture> };
   effectComposer!: EffectComposer;
   outlineEffect?: OutlineEffect;
+  // edlMaterial!: ShaderMaterial;
+  useEDL!: boolean;
+  edlStrength!: number;
+  edlOpacity!: number;
+  edlRadius!: number;
 
   initialize(targetEl: HTMLElement): void {
+    // console.log('Initializing ComposerInitService...');
     const viewer = Viewer.getInstance();
     this.control = new EffectComposer(viewer.renderer, {
       frameBufferType: HalfFloatType,
@@ -43,6 +48,11 @@ export class ComposerInitService {
     this.renderPass = new RenderPass(viewer.scene, viewer.camera);
     this.control.addPass(this.renderPass);
     this.targetEl = targetEl;
+    this.edlRenderer = new EDLRenderer(viewer);
+    this.edlStrength = 1.0;
+    this.edlOpacity = 1.0;
+    this.edlRadius = 1.4;
+    this.useEDL = true;
 
     this.selectedObjects = [];
     this.raycaster = new Raycaster();
@@ -98,9 +108,6 @@ export class ComposerInitService {
       xRay: true
     });
 
-
-
-
     const outlinePass = new EffectPass(viewer.camera, this.outlineEffect);
     outlinePass.renderToScreen = true;
     this.control.addPass(outlinePass);
@@ -131,33 +138,37 @@ export class ComposerInitService {
 
   }
 
+  setEDLEnabled (value:boolean) {
+    value = Boolean(value);
+
+    if (this.useEDL !== value) {
+      this.useEDL = value;
+      console.log(`EDL enabled: ${this.useEDL}`);
+    }
+  }
 
   render() {
     if (!this.isEnabled) {
       return;
     }
-    this.control.render();
+
+    if (this.useEDL && this.edlRenderer) {
+     // console.log('Rendering with EDL...');
+      this.edlRenderer.render({camera: Viewer.getInstance().camera});
+    } else {
+      // console.log('Rendering without EDL...');
+      this.control.render();
+    }
   }
 
-  // renderEdl(edlPass: ShaderPass) {
-  //   // this.control.passes.forEach((pass) => {
-  //   //   pass.enabled = false;
-  //   // });
-  //   //this.renderPass.enabled = true;
-  //   // edlPass.enabled = true;
-  //   // edlPass.renderToScreen = true;
-  //   // this.control.render();
-  //   // edlPass.enabled = false;
-  //
-  // }
  private addSelectedObject = (object: Object3D) => {
     this.selectedObjects = [];
     this.selectedObjects.push(object);
     if (this.outlineEffect) {
       this.outlineEffect['selection'].set(this.selectedObjects);
-      // console.log(this.outlineEffect['selection']);
     }
-  };
+  }
+
   private checkIntersection() {
     const viewer = Viewer.getInstance();
     this.raycaster.setFromCamera(this.mouse, viewer.camera);
